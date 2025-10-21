@@ -2,11 +2,12 @@
 
 本書では、量子ソフトウェア開発キットである CUDA-Q を用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。<br>
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
-[jhpc-quantum・GitHub](https://github.com/jhpc-quantum)
+[jhpc-quantum・GitHub](https://github.com/jhpc-quantum)<br>
+アップデートの情報は[リリースノート](https://github.com/jhpc-quantum/documents/blob/main/releasenotes.md)を参照ください
 
 # 2. CUDA-Qとは
 
-CUDA-Q はNVIDIAが開発したオープンソースの量子-古典ハイブリッド計算プラットフォームです。
+CUDA-QはNVIDIAが開発したオープンソースの量子-古典ハイブリッド計算プラットフォームです。
 PythonとC++でのプログラミングをサポートしています。  
 CUDA-Q の詳細については、公式ホームページ (<https://developer.nvidia.com/cuda-q>) をご覧ください。
 
@@ -30,18 +31,18 @@ cd ${WORK}/CUDA-Q
 
 #### 3.1.2.1  C++版
 
-C++版のCUDA-Qは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK/<***CUDA-Q_x.x.x***>）にインストールされています。
+C++版のCUDA-Qは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***CUDA-Q_x.x.x***>）にインストールされています。
 CUDA-Qを使用するための環境変数設定スクリプト(config.sh)を共有ディレクトリからCUDA-Qディレクトリにコピーしてください。  
 ※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。  
 ※<***CUDA-Q_x.x.x***>のx.x.xには使用するバージョンを指定してください。  
 
 ```
-cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<CUDA-Q_x.x.x>/config.sh .
+cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<CUDA-Q_x.x.x>/config.sh .
 ```
 
 環境変数設定スクリプト(config.sh)  
 ※Spackを用いて必要なパッケージをロードします。  
-下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年7月現在のものです。
+下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年10月現在のものです。
 
 ```
 #!/bin/bash
@@ -69,7 +70,7 @@ else
   exit 1
 fi
 #Python Virtual Environment Name
-VENV_NAME=venv_python
+VENV_NAME=venv_${FRAMEWORK_NAME}_${FRAMEWORK_VERSION}
 #Share Directory
 SHARE_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/${FRAMEWORK_NAME}_${FRAMEWORK_VERSION}
 #SQC Library Directory
@@ -87,8 +88,8 @@ SQC_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/SQC_library_${S
 ※<***CUDA-Q_x.x.x***>のx.x.xには使用するバージョンを指定してください。  
 
 ```
-cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<CUDA-Q_x.x.x>/venv_setup.sh .
-cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<CUDA-Q_x.x.x>/config.sh .
+cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<CUDA-Q_x.x.x>/venv_setup.sh .
+cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<CUDA-Q_x.x.x>/config.sh .
 ```
 
 環境構築スクリプト（venv_setup.sh）を実行します。
@@ -128,7 +129,7 @@ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<CUDA-Q_x.x.x>/config.sh 
 source ./config.sh
 
 # 2. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 3. Set up a Python virtual environment in each user's working directory
@@ -158,8 +159,9 @@ deactivate
 
 ### 3.2.1.  環境設定
 
-以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK/sample/CUDA-Q）に配置されているため必要に応じてコピー・修正を行ってください。
-※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。
+以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***CUDA-Q_x.x.x***/sample）に配置されているため必要に応じてコピー・修正を行ってください。<br>
+※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
+※<***CUDA-Q_x.x.x***>のx.x.xには使用するバージョンを指定してください。  
 <br>
 <br>
 環境設定スクリプト（backend_setup.sh）  
@@ -196,7 +198,7 @@ fi
 source /path/to/config.sh
 
 # 3. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 4. Add grpc and grpc-c-wrapper paths to the LD_LIBRARY_PATH environment variable

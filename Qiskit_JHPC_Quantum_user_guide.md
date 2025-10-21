@@ -1,10 +1,11 @@
 # 1. はじめに
 本書では、量子ソフトウェア開発キットである Qiskit を用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。<br>
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
-[jhpc-quantum・GitHub](https://github.com/jhpc-quantum)
+[jhpc-quantum・GitHub](https://github.com/jhpc-quantum)<br>
+アップデートの情報は[リリースノート](https://github.com/jhpc-quantum/documents/blob/main/releasenotes.md)を参照ください
 
 # 2.　Qiskitとは
-「Qiskit」は量子コンピューター上でプログラムを実行するためのソフトウェアのコレクションです。<br>
+Qiskitは量子コンピューター上でプログラムを実行するためのソフトウェアのコレクションです。<br>
 その中にある、Qiskit SDKは量子回路や操作を量子コンピュータ上で実行するためのソフトウェア開発キットです。オープンソースソフトウェアでIBM社が開発しています。<br>
 Qiskit の詳細については、公式ホームページ (https://www.ibm.com/quantum/qiskit) をご覧ください。<br>
 
@@ -24,12 +25,12 @@ $ cd ${WORK}/Qiskit
 インストールするパッケージは、qiskitと関連パッケージ、およびJHPC Quantumシステム用のqiskit拡張パッケージ(qiskit-sqc-runtime)です。   
 インストール時間は数分です。
 
-共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK/<***Qiskit_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をQiskitディレクトリにコピーします。  
+共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***Qiskit_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をQiskitディレクトリにコピーします。  
 ※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
 ※<***Qiskit_x.x.x***>のx.x.xには使用するバージョンを指定してください。
 ```
-$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<Qiskit_x.x.x>/venv_setup.sh .
-$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<Qiskit_x.x.x>/config.sh .
+$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<Qiskit_x.x.x>/venv_setup.sh .
+$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<Qiskit_x.x.x>/config.sh .
 ```
 環境構築スクリプト（venv_setup.sh）を実行します。     
 
@@ -64,7 +65,7 @@ $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<Qiskit_x.x.x>/config.s
 source ./config.sh
 
 # 2. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 3. Set up a Python virtual environment in each user's working directory
@@ -77,12 +78,12 @@ source ./${VENV_NAME}/bin/activate
 python -m pip install -r ${SHARE_DIR}/requirements.txt
 
 # 5. Install qiskit-sqc-runtime into the virtual environment
-pip install ${SHARE_DIR}/qiskit_sqc_runtime-1.0-py3-none-any.whl
+pip install ${SHARE_DIR}/qiskit_sqc_runtime-${BACKEND_VERSION}-py3-none-any.whl
 deactivate
 ```
 環境変数設定スクリプト(config.sh)  
 ※富岳での環境構築およびQiskitプログラムの実行の際、Spackを用いて必要なパッケージをロードします。  
-下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年7月現在のものです。
+下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年10月現在のものです。
 ```
 #!/bin/bash
 
@@ -90,6 +91,8 @@ deactivate
 FRAMEWORK_NAME=Qiskit
 #Framework Version
 FRAMEWORK_VERSION=2.0.0
+#Backend Version
+BACKEND_VERSION=1.0
 #SQC Library Version
 SQC_VERSION=0.9
 #Architecture
@@ -109,7 +112,7 @@ else
   exit 1
 fi
 #Python Virtual Environment Name
-VENV_NAME=venv_python
+VENV_NAME=venv_${FRAMEWORK_NAME}_${FRAMEWORK_VERSION}_${BACKEND_VERSION}
 #Share Directory
 SHARE_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/${FRAMEWORK_NAME}_${FRAMEWORK_VERSION}
 #SQC Library Directory
@@ -126,8 +129,9 @@ SQC_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/SQC_library_${S
 ```
 ## 3.2.　実行
 ### 3.2.1.　環境設定
-以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK/sample/Qiskit）に配置されているため必要に応じてコピー・修正を行ってください。    
-※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。
+以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***Qiskit_x.x.x***>/sample）に配置されているため必要に応じてコピー・修正を行ってください。    
+※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
+※<***Qiskit_x.x.x***>のx.x.xには使用するバージョンを指定してください。
 <br>
 <br>
 環境設定スクリプト（backend_setup.sh）  
@@ -160,7 +164,7 @@ fi
 source /path/to/config.sh
 
 # 3. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 4. Add modules paths for SQC library to below environment variables
@@ -276,4 +280,16 @@ JobStatus.DONE
 # 4.　既知の問題と対処
 ## 4.1.　プロセスが終了しない問題
 Qiskitを利用してJHPC Quantumの量子コンピュータで実行すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
-そのため、結果が返却され次第ジョブの制限時間やCtrl+Cなどでプロセス終了をしていただく必要があります。
+<br>
+暫定対処法として、以下の方法があります。<br>
+- 結果が返却され次第ジョブの制限時間やCtrl+Cなどでプロセスを強制的に終了させる。
+- 以下の環境変数の設定のうちどちらか片方を行う。
+   
+   -
+      ```
+      $ export OPENBLAS_NUM_THREADS=1
+      ```
+   -
+      ```
+      $ export OMP_NUM_THREADS=1
+      ```

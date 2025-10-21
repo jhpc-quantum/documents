@@ -1,9 +1,10 @@
 # 1. はじめに
 本書では、量子ソフトウェア開発キットである TKET を用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。  
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
-[jhpc-quantum・GitHub](https://github.com/jhpc-quantum)
+[jhpc-quantum・GitHub](https://github.com/jhpc-quantum)<br>
+アップデートの情報は[リリースノート](https://github.com/jhpc-quantum/documents/blob/main/releasenotes.md)を参照ください
 # 2.　TKETとは
-TKET はゲート型量子コンピュータ向けのプログラムを作成・実行するためのソフトウェア開発キットです。  
+TKETはゲート型量子コンピュータ向けのプログラムを作成・実行するためのソフトウェア開発キットです。  
 拡張モジュールも豊富で、現在提供されている様々な量子コンピュータやシミュレータに対して活用できるほか、その他の量子ソフトウェアライブラリとの互換性も有します。  
 TKET の詳細については、公式ホームページ (https://quantinuum.co.jp/business/tket) をご覧ください。
 
@@ -23,12 +24,12 @@ $ cd ${WORK}/TKET
 インストールするパッケージは、TKET(pytket)と関連パッケージ、およびJHPC Quantumシステム用のpytket拡張パッケージ(pytket-sqc)です。   
 インストール時間は数分です。
 
-共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK/<***TKET_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をTKETディレクトリにコピーします。  
+共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***TKET_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をTKETディレクトリにコピーします。  
 ※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。  
 ※<***TKET_x.x.x***>のx.x.xには使用するバージョンを指定してください。
 ```
-$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<TKET_x.x.x>/venv_setup.sh .
-$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<TKET_x.x.x>/config.sh .
+$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<TKET_x.x.x>/venv_setup.sh .
+$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<TKET_x.x.x>/config.sh .
 ```
 環境構築スクリプト（venv_setup.sh）を実行します。     
 
@@ -63,7 +64,7 @@ $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK/<TKET_x.x.x>/config.sh 
 source ./config.sh
 
 # 2. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 3. Set up a Python virtual environment in each user's working directory
@@ -76,12 +77,12 @@ source ./${VENV_NAME}/bin/activate
 python -m pip install -r ${SHARE_DIR}/requirements.txt
 
 # 5. Install pytket-sqc into the virtual environment
-pip install ${SHARE_DIR}/pytket_sqc-1.0-py3-none-any.whl
+pip install ${SHARE_DIR}/pytket_sqc-${BACKEND_VERSION}-py3-none-any.whl
 deactivate
 ```
 環境変数設定スクリプト(config.sh)  
 ※富岳での環境構築およびTKETプログラムの実行の際、Spackを用いて必要なパッケージをロードします。  
-下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年7月現在のものです。
+下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年10月現在のものです。
 ```
 #!/bin/bash
 
@@ -89,6 +90,8 @@ deactivate
 FRAMEWORK_NAME=TKET
 #Framework Version
 FRAMEWORK_VERSION=2.4.1
+#Backend Version
+BACKEND_VERSION=1.0
 #SQC Library Version
 SQC_VERSION=0.9
 #Architecture
@@ -108,7 +111,7 @@ else
   exit 1
 fi
 #Python Virtual Environment Name
-VENV_NAME=venv_python
+VENV_NAME=venv_${FRAMEWORK_NAME}_${FRAMEWORK_VERSION}_${BACKEND_VERSION}
 #Share Directory
 SHARE_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/${FRAMEWORK_NAME}_${FRAMEWORK_VERSION}
 #SQC Library Directory
@@ -126,8 +129,9 @@ SQC_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/SQC_library_${S
 ```
 ## 3.2.　実行
 ### 3.2.1.　環境設定
-以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK/sample/TKET）に配置されているため必要に応じてコピー・修正を行ってください。    
-※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。
+以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***TKET_x.x.x***>/sample）に配置されているため必要に応じてコピー・修正を行ってください。    
+※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
+※<***TKET_x.x.x***>のx.x.xには使用するバージョンを指定してください。
 <br>
 <br>
 環境設定スクリプト（backend_setup.sh）  
@@ -160,7 +164,7 @@ fi
 source /path/to/config.sh
 
 # 3. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 4. Add modules paths for SQC library to below environment variables
