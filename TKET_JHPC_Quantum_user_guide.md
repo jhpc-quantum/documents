@@ -91,9 +91,9 @@ FRAMEWORK_NAME=TKET
 #Framework Version
 FRAMEWORK_VERSION=2.4.1
 #Backend Version
-BACKEND_VERSION=1.0
+BACKEND_VERSION=1.1
 #SQC Library Version
-SQC_VERSION=0.9
+SQC_VERSION=0.10.0
 #Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
@@ -183,15 +183,22 @@ JHPC Quantumシステム上で量子回路を実行するサンプルプログ�
 ```
 from pytket import Circuit
 from pytket_sqc.sqcbackend import SqcBackend
-# 回路の作成
+
+# Construct circuit
 circ = Circuit(2)
 circ.H(0)
 circ.CX(0,1)
 circ.measure_all()
-# バックエンドの作成
+
+# Get backend
 b = SqcBackend('qtm-sim-grpc')
-result = b.process_circuit(circ, 10)
-print(result)
+
+# Run quantum circuit
+result = b.run_circuit(circ, 10)
+
+# Show result 
+print(f"Bitlist: {result.get_bitlist()}")
+print(result.get_counts())
 ```
 ※ ***#バックエンド作成*** のSqcBackendの引数は下記の表を参照し、接続先に対応する引数を指定してください。
 | 接続先 | SqcBackendの引数 | 
@@ -241,7 +248,6 @@ source ./backend_setup.sh reimei-simulator
 source /path/to/${VENV_NAME}/bin/activate
 
 #3. Verification test for pytket-sqc installation
-echo "Result sample.py"
 python ./sample.py
 ```
 
@@ -250,35 +256,6 @@ python ./sample.py
 
 JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）の実行結果の例
 ```
-Result sample.py
-{
-   c    : "11"
-}
-{
-   c    : "00"
-}
-{
-   c    : "11"
-}
-{
-   c    : "11"
-}
-{
-   c    : "11"
-}
-{
-   c    : "00"
-}
-{
-   c    : "11"
-}
-{
-   c    : "00"
-}
-{
-   c    : "11"
-}
-{
-   c    : "00"
-}
+Bitlist: [c[0], c[1]]
+Counter({(1, 1): 6, (0, 0): 4})
 ```

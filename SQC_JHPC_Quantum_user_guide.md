@@ -28,12 +28,12 @@ $ cd ${WORK}/SQC
 インストールするパッケージは、qiskit,qiskit-ibm-runtime,qiskit-qasm3-importと関連パッケージです。<br>
 インストール時間は数分です。
 
-共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***SQC_library_x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をSQCディレクトリにコピーします。  
+共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***SQC_library_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をSQCディレクトリにコピーします。  
 ※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
-※<***SQC_library_x.x***>のx.xには使用するバージョンを指定してください。
+※<***SQC_library_x.x.x***>のx.xには使用するバージョンを指定してください。
 ```
-$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<SQC_library_x.x>/venv_setup.sh .
-$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<SQC_library_x.x>/config.sh .
+$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<SQC_library_x.x.x>/venv_setup.sh .
+$ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<SQC_library_x.x.x>/config.sh .
 ```
 環境構築スクリプト（venv_setup.sh）を実行します。  
 ジョブスクリプト例（プリポストサーバ実行時）  
@@ -88,7 +88,7 @@ deactivate
 #!/bin/bash
 
 #SQC Library Version
-SQC_VERSION=0.9
+SQC_VERSION=0.10.0
 #Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
@@ -123,9 +123,9 @@ SQC_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/SQC_library_${S
 ```
 ## 3.2.　実行
 ### 3.2.1.　環境設定
-以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***SQC_library_x.x***>/sample）に配置されているため必要に応じてコピー・修正を行ってください。    
+以降の手順で使用するスクリプトおよびサンプルプログラムは共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***SQC_library_x.x.x***>/sample）に配置されているため必要に応じてコピー・修正を行ってください。    
 ※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
-※<***SQC_library_x.x***>のx.xには使用するバージョンを指定してください。
+※<***SQC_library_x.x.x***>のx.xには使用するバージョンを指定してください。
 <br>
 <br>
 環境設定スクリプト（backend_setup.sh）  
@@ -134,7 +134,7 @@ SQC_DIR=/vol0300/share/ra010014/jhpcq_modules/${TARGET_NAME}/SDK/SQC_library_${S
 ※ backend_setup.shの引数として、以下のいずれかの接続先量子コンピュータを指定してください。
 * reimei
 * reimei-simulator
-* ibm-kobe-dacc(現在利用不可)
+* ibm-kobe-dacc
 ```
 #!/bin/bash
 
@@ -163,9 +163,10 @@ source /path/to/config.sh
 source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
-# 4. Add SQC library paths to the LD_LIBRARY_PATH and PKG_CONFIG_PATH environment variable
+# 4. Add SQC library paths to various environment variables
 export LD_LIBRARY_PATH=${SQC_DIR}/lib:${SQC_DIR}/lib64:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=${SQC_DIR}/lib64/pkgconfig
+export PYTHONPATH=${SQC_DIR}/python:${PYTHONPATH}
 
 # 5. Set SQC_COMPILE_OPTIONS variable to compile program using SQC C-API.
 SQC_LIBS="-lsqc_api  -lsqc_rpc -lsqc_reqsched -lsqc_reqinvoker -lqtmd_sim_invoker -lsqc_dbmgr\
@@ -296,10 +297,17 @@ C-APIで作成した回路を実行するサンプルプログラム（sample_ap
 
 int main(int argc, char *argv[])
 {
+  // Specify backend
+  sqcBackend backend = SQC_RPC_SCHED_QC_TYPE_QTM_SIM_GRPC;
+
   // Initialize C-API
   sqcInitOptions* init_options = sqcMallocInitOptions();
-  init_options->use_qiskit = 0;
-  sqcInitialize(init_options); 
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC){
+    init_options->use_qiskit = 1;
+  } else {
+    init_options->use_qiskit = 0;
+  }
+  sqcInitialize(init_options);
 
   // Construct circuit
   const int qubits = 2;
@@ -316,9 +324,19 @@ int main(int argc, char *argv[])
   run_options->qubits = qubits;
   run_options->outFormat = SQC_OUT_RAW;
 
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC) {
+    // Convert quantum circuit to OpenQASM string
+    qcir->qasm = (char*)malloc(500);
+    sqcConvQASMtoMemory(qcir, backend, qcir->qasm, 500);
+    
+    // Transpile quantum circuit
+    sqcTranspile(qcir, backend, NULL);
+    printf("QASM after transpile: %s\n", qcir->qasm);
+  }
+
   // Run quantum circuit
   sqcOut* result_out = (sqcOut *)malloc(sizeof(sqcOut));
-  int error_code = sqcQCRun(qcir, SQC_RPC_SCHED_QC_TYPE_QTM_SIM_GRPC, *run_options, result_out);
+  int error_code = sqcQCRun(qcir, backend, *run_options, result_out);
 
   // Show error_code
   printf("error_code:%d\n", error_code);
@@ -337,6 +355,7 @@ int main(int argc, char *argv[])
 
   // End processing of C-API
   sqcFreeOut(result_out, run_options->outFormat);
+  free(result_out);
   free(run_options);
   sqcDestroyQuantumCircuit(qcir);
   sqcFinalize(init_options);
@@ -345,10 +364,9 @@ int main(int argc, char *argv[])
   return 0;
 }
 ```
-上記サンプルプログラムの実行結果例
+上記サンプルプログラムの実行結果ファイル（result.txt）の例<br>
+reimeiまたはreimei-simulatorの場合
 ```
-error_code:0
-result string
 {
    c    : "00"
 }
@@ -378,6 +396,65 @@ result string
 }
 {
    c    : "11"
+}
+```
+ibm-kobe-daccの場合
+```
+{
+ "metadata": {
+  "execution": {
+   "execution_spans": [
+    [
+     {
+      "date": "2025-10-27T06:15:03.863615"
+     },
+     {
+      "date": "2025-10-27T06:15:04.781847"
+     },
+     {
+      "0": [
+       [
+        10
+       ],
+       [
+        0,
+        1
+       ],
+       [
+        0,
+        10
+       ]
+      ]
+     }
+    ]
+   ]
+  },
+  "version": 2
+ },
+ "results": [
+  {
+   "data": {
+    "c": {
+     "num_bits": 2,
+     "samples": [
+      "0x3",
+      "0x3",
+      "0x0",
+      "0x3",
+      "0x3",
+      "0x0",
+      "0x3",
+      "0x3",
+      "0x3",
+      "0x3"
+     ]
+    }
+   },
+   "metadata": {
+    "circuit_metadata": {}
+   }
+  }
+ ]
 }
 ```
 #### 3.2.3.2. OpenQASMファイルの実行
@@ -392,16 +469,28 @@ OpenQASMファイルを実行するサンプルプログラム（sample_qasm.c�
 
 int main(int argc, char *argv[])
 {
+  // Specify backend and 
+  sqcBackend backend = SQC_RPC_SCHED_QC_TYPE_QTM_SIM_GRPC;
+
   // Initialize C-API
   sqcInitOptions* init_options = sqcMallocInitOptions();
-  init_options->use_qiskit = 0;
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC){
+    init_options->use_qiskit = 1;
+  } else {
+    init_options->use_qiskit = 0;
+  }
   sqcInitialize(init_options); 
 
   // Read OpenQASM file
   const int qubits = 2;
   sqcQC* qcir = sqcQuantumCircuit(qubits);
   qcir->qasm = (char *)calloc(sizeof(char), MAX_QASM_LEN);
-  sqcReadQasmFile(&(qcir->qasm), "./sample.qasm", MAX_QASM_LEN);
+  
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC){
+    sqcReadQasmFile(&(qcir->qasm), "./sample.qasm3", MAX_QASM_LEN);
+  } else {
+    sqcReadQasmFile(&(qcir->qasm), "./sample.qasm2", MAX_QASM_LEN);
+  }
 
   // Set run option
   sqcRunOptions* run_options = (sqcRunOptions*)malloc(sizeof(sqcRunOptions));
@@ -410,10 +499,15 @@ int main(int argc, char *argv[])
   run_options->qubits = qubits;
   run_options->outFormat = SQC_OUT_RAW;
 
+  // Transpile quantum circuit
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC) {
+    sqcTranspile(qcir, backend, NULL);
+    printf("QASM after transpile: %s\n", qcir->qasm);
+  }
+
   // Run quantum circuit
-  sqcOut* result_out;
-  result_out = (sqcOut *)malloc(sizeof(sqcOut));
-  int error_code = sqcQCRun(qcir, SQC_RPC_SCHED_QC_TYPE_QTM_SIM_GRPC, *run_options, result_out);
+  sqcOut* result_out = (sqcOut *)malloc(sizeof(sqcOut));
+  int error_code = sqcQCRun(qcir, backend, *run_options, result_out);
   
   // Show error_code
   printf("error_code:%d\n", error_code);
@@ -432,6 +526,7 @@ int main(int argc, char *argv[])
 
   // End processing of C-API
   sqcFreeOut(result_out, run_options->outFormat);
+  free(result_out);
   free(run_options);
   sqcDestroyQuantumCircuit(qcir);
   sqcFinalize(init_options);
@@ -440,7 +535,8 @@ int main(int argc, char *argv[])
   return 0;
 }
 ```
-上記で利用するOpenQASMファイルの例（sample.qasm）
+上記で利用するOpenQASMファイルの例<br>
+reimeiまたはreimei-simulatorの場合（sample.qasm2）
 ```
 OPENQASM 2.0;
 include "qelib1.inc";
@@ -451,10 +547,20 @@ cx q[0], q[1];
 measure q[0] -> c[0];
 measure q[1] -> c[1];
 ```
-上記サンプルプログラムの実行結果例
+ibm-kobe-daccの場合（sample.qasm3）
 ```
-error_code:0
-result string
+OPENQASM 3.0;
+include "stdgates.inc";
+bit[2] c;
+qubit[2] q;
+h q[0];
+cx q[0], q[1];
+c[0] = measure q[0];
+c[1] = measure q[1];
+```
+上記サンプルプログラムの実行結果ファイル（result_qasm.txt）の例<br>
+reimeiまたはreimei-simulatorの場合
+```
 {
    c    : "00"
 }
@@ -484,5 +590,64 @@ result string
 }
 {
    c    : "11"
+}
+```
+ibm-kobe-daccの場合
+```
+{
+ "metadata": {
+  "execution": {
+   "execution_spans": [
+    [
+     {
+      "date": "2025-10-27T06:24:56.046955"
+     },
+     {
+      "date": "2025-10-27T06:24:56.941759"
+     },
+     {
+      "0": [
+       [
+        10
+       ],
+       [
+        0,
+        1
+       ],
+       [
+        0,
+        10
+       ]
+      ]
+     }
+    ]
+   ]
+  },
+  "version": 2
+ },
+ "results": [
+  {
+   "data": {
+    "c": {
+     "num_bits": 2,
+     "samples": [
+      "0x0",
+      "0x3",
+      "0x0",
+      "0x3",
+      "0x0",
+      "0x3",
+      "0x0",
+      "0x2",
+      "0x0",
+      "0x0"
+     ]
+    }
+   },
+   "metadata": {
+    "circuit_metadata": {}
+   }
+  }
+ ]
 }
 ```

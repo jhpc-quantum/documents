@@ -92,9 +92,9 @@ FRAMEWORK_NAME=Qiskit
 #Framework Version
 FRAMEWORK_VERSION=2.0.0
 #Backend Version
-BACKEND_VERSION=1.0
+BACKEND_VERSION=1.1
 #SQC Library Version
-SQC_VERSION=0.9
+SQC_VERSION=0.10.0
 #Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
@@ -150,8 +150,6 @@ if [ "$#" -eq 1 ]; then
   elif [ $QPU = "reimei-simulator" ]; then
      export SQC_RPC_SERVER=ip:port
   elif [ $QPU = "ibm-kobe-dacc" ]; then
-     echo "not available"
-     exit 1
      export SQC_RPC_SERVER=ip:port
   else
      echo "invalid qpu $QPU"
@@ -176,10 +174,15 @@ export PATH=${SQC_DIR}/bin:$PATH
 export SQC_LIBRARY_PATH=${SQC_DIR}/lib64
 ```
 ### 3.2.2.　実行
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）を実行する方法について説明します。  
+JHPC Quantumシステム上で量子回路を実行するサンプルプログラムを実行する方法について説明します。<br>
+※ SQCBackendの引数は下記の表を参照し、接続先に対応する引数を指定してください。
+| 接続先 | SQCBackendの引数 | 
+|--------|--------|
+| reimei  | qtm-grpc  | 
+| reimei-simulator | qtm-sim-grpc  | 
+| ibm-kobe-dacc  | ibm-dacc または ibm-kobe-dacc  |
 
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）  
-
+reimei-simulator上で量子回路を実行するサンプルプログラム（sample_reiemi-sim.py）  
 ```
 from qiskit.circuit import QuantumCircuit
 from qiskit_sqc_runtime import SQCBackend, SQCSamplerV2
@@ -199,15 +202,51 @@ job = sampler.run(qc, shots=10)
 
 # Show result 
 result = job.result()
-print(result)
+print(result[0].data.meas.get_counts())
 print(job.status())
 ```
-※ SQCBackendの引数は下記の表を参照し、接続先に対応する引数を指定してください。
-| 接続先 | SQCBackendの引数 | 
-|--------|--------|
-| reimei  | qtm-grpc  | 
-| reimei-simulator | qtm-sim-grpc  | 
-| ibm-kobe-dacc  | 未定  |   
+
+ibm-kobe-dacc上で量子回路を実行するサンプルプログラム（sample_ibm.py）  
+```
+from qiskit.circuit import QuantumCircuit
+from qiskit_sqc_runtime import SQCBackend, SQCSamplerV2
+
+# Construct circuit
+qc = QuantumCircuit(2)
+qc.h(0)
+qc.cx(0, 1)
+qc.measure_all()
+
+# Get backend
+backend = SQCBackend("ibm-dacc")
+
+# Get backend information
+transpile_info = backend.transpile_info()
+
+# Convert backend information to Target instance
+from qiskit_ibm_runtime.utils.backend_converter import convert_to_target
+from qiskit_ibm_runtime.models import BackendProperties, BackendConfiguration
+import json
+prop_json = json.loads(transpile_info[0])
+backend_prop = BackendProperties.from_dict(prop_json)
+conf_json = json.loads(transpile_info[1])
+backend_conf = BackendConfiguration.from_dict(conf_json)
+target = convert_to_target(backend_conf, backend_prop)
+
+# Transpile circuit
+from qiskit.transpiler import generate_preset_pass_manager
+pm = generate_preset_pass_manager(target=target, optimization_level=1)
+isa_circuit = pm.run(qc)
+
+# Run quantum circuit
+sampler = SQCSamplerV2(backend)
+job = sampler.run(isa_circuit, shots=10)
+
+# Show result 
+result = job.result()
+print(result) # Return string
+print(job.status())
+```
 
 <br>
 Qiskitのサンプルプログラムを実行するスクリプト（test.sh）を実行します。  
@@ -238,7 +277,7 @@ Qiskitのサンプルプログラムを実行するスクリプト（test.sh）<
 ※ backend_setup.shの引数として、以下のいずれかの接続先量子コンピュータを指定してください。
 * reimei
 * reimei-simulator
-* ibm-kobe-dacc(現在利用不可)
+* ibm-kobe-dacc
 ```
 #!/bin/bash
 
@@ -250,31 +289,76 @@ source ./backend_setup.sh reimei-simulator
 source /path/to/${VENV_NAME}/bin/activate
 
 #3. Verification test for qiskit-sqc-runtime installation
-echo "Result sample.py"
-python ./sample.py
+python ./sample_reimei-sim.py
 ```
 
 ### 3.2.3.　実行結果  
-プリポスト環境と富岳計算ノード（Arm）における”sample.py”の実行結果です。
+プリポスト環境と富岳計算ノード（Arm）におけるサンプルプログラムの実行結果です。
 
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）の実行結果の例
+reimei-simulator上で量子回路を実行するサンプルプログラム（sample_reimei-sim.py）の実行結果の例
+```
+{'11': 6, '00': 4}
+JobStatus.DONE
+```
+ibm-kobe-dacc上で量子回路を実行するサンプルプログラム（sample_ibm.py）の実行結果の例
 ```
 {
-   c    : "11"
+ "metadata": {
+  "execution": {
+   "execution_spans": [
+    [
+     {
+      "date": "2025-10-27T07:28:11.887278"
+     },
+     {
+      "date": "2025-10-27T07:28:12.759585"
+     },
+     {
+      "0": [
+       [
+        10
+       ],
+       [
+        0,
+        1
+       ],
+       [
+        0,
+        10
+       ]
+      ]
+     }
+    ]
+   ]
+  },
+  "version": 2
+ },
+ "results": [
+  {
+   "data": {
+    "meas": {
+     "num_bits": 2,
+     "samples": [
+      "0x0",
+      "0x0",
+      "0x3",
+      "0x0",
+      "0x3",
+      "0x0",
+      "0x3",
+      "0x0",
+      "0x0",
+      "0x3"
+     ]
+    }
+   },
+   "metadata": {
+    "circuit_metadata": {}
+   }
+  }
+ ]
 }
-{
-   c    : "11"
-}
-:(省略)
-{
-   c    : "00"
-}
-{
-   c    : "11"
-}
-
 JobStatus.DONE
-
 ```
 
 # 4.　既知の問題と対処
