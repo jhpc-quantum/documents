@@ -11,12 +11,28 @@ First release.
 
 ## Qiskit
 ### 2.0.0
+- qiskit-ibm-runtime-jhpcq
+    - 0.41.0
+        - Added
+            - QiskitRuntimeService, SamplerV2 support JHPC Quantum. 
+
 - qiskit-sqc-runtime
+    - 1.2
+        - Added
+            - Add SQCRuntimeService class.
+        - Changed
+            - Change connection destination strings that can be specified for SQCBackend constructor.
+            - Change so that the usage is the same as IBM Cloud.
+                - Change return value of SQCBackend.target from None to qiskit.transpiler.Target when backend is "ibm_sqc".
+                - Change "circuit: QuantumCircuit" argument of SQCSamplerV2.run to "pubs: Iterable[SamplerPubLike]". However, multiple circuits and qiskit.circuit.Parameter is not supported.
+                - Change result type of runnning quantum circuit from string to qiskit.primitives.containers.PrimitiveResult when backend is "ibm_sqc".
+        - Removed
+            - Remove SQCBackend.transpile_info method. Use SQCBackend.target instead of this method.
     - 1.1
         - Added
             - Add prototype of running quantum circuit on "ibm-kobe-dacc".
         - Changed
-            - Change result type of runnning quantum circuit from string to "qiskit" result object.
+            - Change result type of runnning quantum circuit from string to qiskit.primitives.containers.PrimitiveResult when backend is "qtm-sim-grpc" and "qtm-grpc".
     - 1.0<br>
         First release.
 

@@ -77,7 +77,8 @@ python -m venv ${VENV_NAME}
 source ./${VENV_NAME}/bin/activate
 python -m pip install -r ${SHARE_DIR}/requirements.txt
 
-# 5. Install qiskit-sqc-runtime into the virtual environment
+# 5. Install qiskit-ibm-runtime-jhpcq and qiskit-sqc-runtime into the virtual environment
+pip install ${SHARE_DIR}/qiskit_ibm_runtime_jhpcq-0.41.0-py3-none-any.whl
 pip install ${SHARE_DIR}/qiskit_sqc_runtime-${BACKEND_VERSION}-py3-none-any.whl
 deactivate
 ```
@@ -92,7 +93,7 @@ FRAMEWORK_NAME=Qiskit
 #Framework Version
 FRAMEWORK_VERSION=2.0.0
 #Backend Version
-BACKEND_VERSION=1.1
+BACKEND_VERSION=1.2
 #SQC Library Version
 SQC_VERSION=0.10.0
 #Architecture
@@ -178,14 +179,14 @@ JHPC Quantumシステム上で量子回路を実行するサンプルプログ�
 ※ SQCBackendの引数は下記の表を参照し、接続先に対応する引数を指定してください。
 | 接続先 | SQCBackendの引数 | 
 |--------|--------|
-| reimei  | qtm-grpc  | 
-| reimei-simulator | qtm-sim-grpc  | 
-| ibm-kobe-dacc  | ibm-dacc または ibm-kobe-dacc  |
+| reimei  | qtm_grpc  |
+| reimei-simulator | qtm_sim_grpc  |
+| ibm-kobe-dacc  | ibm_sqc  |
 
-reimei-simulator上で量子回路を実行するサンプルプログラム（sample_reiemi-sim.py）  
+JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）
 ```
 from qiskit.circuit import QuantumCircuit
-from qiskit_sqc_runtime import SQCBackend, SQCSamplerV2
+from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
 
 # Construct circuit
 qc = QuantumCircuit(2)
@@ -194,57 +195,21 @@ qc.cx(0, 1)
 qc.measure_all()
 
 # Get backend
-backend = SQCBackend("qtm-sim-grpc")
+service = QiskitRuntimeService(channel="jhpc_quantum")
+backend = service.backend(name="qtm_sim_grpc")
+
+# Transpile circuit
+from qiskit.transpiler import generate_preset_pass_manager
+pm = generate_preset_pass_manager(target=backend.target, optimization_level=1)
+isa_circuit = pm.run(qc)
 
 # Run quantum circuit
-sampler = SQCSamplerV2(backend)
-job = sampler.run(qc, shots=10)
+sampler = SamplerV2(mode=backend)
+job = sampler.run([isa_circuit], shots=10)
 
 # Show result 
 result = job.result()
 print(result[0].data.meas.get_counts())
-print(job.status())
-```
-
-ibm-kobe-dacc上で量子回路を実行するサンプルプログラム（sample_ibm.py）  
-```
-from qiskit.circuit import QuantumCircuit
-from qiskit_sqc_runtime import SQCBackend, SQCSamplerV2
-
-# Construct circuit
-qc = QuantumCircuit(2)
-qc.h(0)
-qc.cx(0, 1)
-qc.measure_all()
-
-# Get backend
-backend = SQCBackend("ibm-dacc")
-
-# Get backend information
-transpile_info = backend.transpile_info()
-
-# Convert backend information to Target instance
-from qiskit_ibm_runtime.utils.backend_converter import convert_to_target
-from qiskit_ibm_runtime.models import BackendProperties, BackendConfiguration
-import json
-prop_json = json.loads(transpile_info[0])
-backend_prop = BackendProperties.from_dict(prop_json)
-conf_json = json.loads(transpile_info[1])
-backend_conf = BackendConfiguration.from_dict(conf_json)
-target = convert_to_target(backend_conf, backend_prop)
-
-# Transpile circuit
-from qiskit.transpiler import generate_preset_pass_manager
-pm = generate_preset_pass_manager(target=target, optimization_level=1)
-isa_circuit = pm.run(qc)
-
-# Run quantum circuit
-sampler = SQCSamplerV2(backend)
-job = sampler.run(isa_circuit, shots=10)
-
-# Show result 
-result = job.result()
-print(result) # Return string
 print(job.status())
 ```
 
@@ -289,75 +254,15 @@ source ./backend_setup.sh reimei-simulator
 source /path/to/${VENV_NAME}/bin/activate
 
 #3. Verification test for qiskit-sqc-runtime installation
-python ./sample_reimei-sim.py
+python ./sample.py
 ```
 
 ### 3.2.3.　実行結果  
 プリポスト環境と富岳計算ノード（Arm）におけるサンプルプログラムの実行結果です。
 
-reimei-simulator上で量子回路を実行するサンプルプログラム（sample_reimei-sim.py）の実行結果の例
+JHPC Quantumシステム上でで量子回路を実行するサンプルプログラム（sample.py）の実行結果の例
 ```
 {'11': 6, '00': 4}
-JobStatus.DONE
-```
-ibm-kobe-dacc上で量子回路を実行するサンプルプログラム（sample_ibm.py）の実行結果の例
-```
-{
- "metadata": {
-  "execution": {
-   "execution_spans": [
-    [
-     {
-      "date": "2025-10-27T07:28:11.887278"
-     },
-     {
-      "date": "2025-10-27T07:28:12.759585"
-     },
-     {
-      "0": [
-       [
-        10
-       ],
-       [
-        0,
-        1
-       ],
-       [
-        0,
-        10
-       ]
-      ]
-     }
-    ]
-   ]
-  },
-  "version": 2
- },
- "results": [
-  {
-   "data": {
-    "meas": {
-     "num_bits": 2,
-     "samples": [
-      "0x0",
-      "0x0",
-      "0x3",
-      "0x0",
-      "0x3",
-      "0x0",
-      "0x3",
-      "0x0",
-      "0x0",
-      "0x3"
-     ]
-    }
-   },
-   "metadata": {
-    "circuit_metadata": {}
-   }
-  }
- ]
-}
 JobStatus.DONE
 ```
 
