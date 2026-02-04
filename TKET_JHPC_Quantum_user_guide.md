@@ -64,7 +64,7 @@ $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<TKET_x.x.x>/con
 source ./config.sh
 
 # 2. Load related packages with Spack
-source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 3. Set up a Python virtual environment in each user's working directory
@@ -82,7 +82,7 @@ deactivate
 ```
 環境変数設定スクリプト(config.sh)  
 ※富岳での環境構築およびTKETプログラムの実行の際、Spackを用いて必要なパッケージをロードします。  
-下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2025年10月現在のものです。
+下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2026年1月現在のものです。
 ```
 #!/bin/bash
 
@@ -97,13 +97,13 @@ SQC_VERSION=0.10.0
 #Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
-  #Packcage Name：python@3.11.6(yjlixq5), gcc@13.2.0(77gzpid)
-  SPACK_PKG="/yjlixq5 /77gzpid"
+  #Packcage Name：python, gcc
+  SPACK_PKG="python@3.13.5/xwl6x7i gcc@15.1.0/pmdm4gu"
   #Target Name
   TARGET_NAME=x86
 elif [ "$ARCH" = "aarch64" ]; then
-  #Packcage Name：py-numpy@1.25.2(dgmiy5n), python@3.11.6(qbmpmn2), gcc@13.2.0 (abihbe7)
-  SPACK_PKG="/dgmiy5n /qbmpmn2 /abihbe7"
+  echo "This architecture is not supported."
+  exit 1
   #Target Name
   TARGET_NAME=a64fx
 else
@@ -164,7 +164,7 @@ fi
 source /path/to/config.sh
 
 # 3. Load related packages with Spack
-source /vol0004/apps/oss/spack-v0.21/share/spack/setup-env.sh
+source /vol0004/apps/oss/spack/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
 # 4. Add modules paths for SQC library to below environment variables
