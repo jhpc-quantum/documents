@@ -1,6 +1,9 @@
 # Release Notes
 
 ## SQC library
+### 0.11.0
+ - Added
+    - Support asynchronously execution as experimental feature.
 ### 0.10.0
  - Added
     - Support a new quantum computer, "ibm-kobe-dacc".

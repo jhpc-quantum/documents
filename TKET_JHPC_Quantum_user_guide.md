@@ -82,18 +82,25 @@ deactivate
 ```
 環境変数設定スクリプト(config.sh)  
 ※富岳での環境構築およびTKETプログラムの実行の際、Spackを用いて必要なパッケージをロードします。  
-下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2026年1月現在のものです。
+下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2026年5月現在のものです。<br>
+※<**x.x.x**>,<**y.y**>,<**z.z.z**>には利用するソフトウェアのバージョンが記載されています。
+下記に環境変数と利用ソフトウェアの対応を記載します。
+| 環境変数 | 利用ソフトウェア　| 
+|--------|--------|
+| FRAMEWORK_VERSION | pytket |
+| BACKEND_VERSION | pytket-sqc |
+| SQC_VERSION  | SQCライブラリ |
 ```
 #!/bin/bash
 
 #Framework Name
 FRAMEWORK_NAME=TKET
 #Framework Version
-FRAMEWORK_VERSION=2.4.1
+FRAMEWORK_VERSION=<x.x.x>
 #Backend Version
-BACKEND_VERSION=1.1
+BACKEND_VERSION=<y.y>
 #SQC Library Version
-SQC_VERSION=0.10.0
+SQC_VERSION=<z.z.z>
 #Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then

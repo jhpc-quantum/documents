@@ -30,7 +30,7 @@ $ cd ${WORK}/SQC
 
 共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***SQC_library_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をSQCディレクトリにコピーします。  
 ※<***ARCH***>には環境に合わせてa64fxまたはx86を指定してください。<br>
-※<***SQC_library_x.x.x***>のx.xには使用するバージョンを指定してください。
+※<***SQC_library_x.x.x***>のx.x.xには使用するバージョンを指定してください。
 ```
 $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<SQC_library_x.x.x>/venv_setup.sh .
 $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<SQC_library_x.x.x>/config.sh .
@@ -83,17 +83,18 @@ deactivate
 
 環境変数設定スクリプト(config.sh)  
 ※富岳での環境構築およびSQCプログラムの実行の際、Spackを用いて必要なパッケージをロードします。  
-下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2026年1月現在のものです。
+下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2026年5月現在のものです。<br>
+※<**x.x.x**>には利用するSQCライブラリのバージョンが記載されています。
 ```
 #!/bin/bash
 
 #SQC Library Version
-SQC_VERSION=0.10.0
+SQC_VERSION=<x.x.x>
 #Architecture
 ARCH=$(uname -m)
 if [ "$ARCH" = "x86_64" ]; then
-  #Packcage Name：python, gcc
-  SPACK_PKG="python@3.13.5/xwl6x7i gcc@15.1.0/pmdm4gu"
+  #Packcage Name：python, gcc, boost
+  SPACK_PKG="python@3.13.5/xwl6x7i gcc@15.1.0/pmdm4gu boost@1.88.0/zxt2ddd"
   #Target Name
   TARGET_NAME=x86
 elif [ "$ARCH" = "aarch64" ]; then
@@ -167,7 +168,7 @@ export PKG_CONFIG_PATH=${SQC_DIR}/lib64/pkgconfig
 export PYTHONPATH=${SQC_DIR}/python:${PYTHONPATH}
 
 # 5. Set SQC_COMPILE_OPTIONS variable to compile program using SQC C-API.
-SQC_LIBS="-lsqc_api  -lsqc_rpc -lsqc_reqsched -lsqc_reqinvoker -lqtmd_sim_invoker -lsqc_dbmgr\
+SQC_LIBS="-lsqc_api -lsqc_rpc -lsqc_dbmgr\
  -lsqc_util -lsqc_rpccommon -luuid -lsqlite3 -lprotobuf -labsl_leak_check -labsl_die_if_null\
  -labsl_log_initialize -lutf8_validity -lutf8_range -lgrpc++ -lgrpc -laddress_sorting -lupb_textformat_lib\
  -lupb_json_lib -lupb_wire_lib -lupb_message_lib -lutf8_range_lib -lupb_mini_descriptor_lib -lupb_mem_lib\
@@ -192,11 +193,11 @@ SQC_LIBS="-lsqc_api  -lsqc_rpc -lsqc_reqsched -lsqc_reqinvoker -lqtmd_sim_invoke
  -labsl_throw_delegate -labsl_time_zone -labsl_bad_variant_access -labsl_raw_logging_internal\
  -labsl_log_severity -lcares -lssl -lre2 -lz -lmunge -lcrypto -lsqc_rpccommon -lprotobuf-c -lrt\
  -lpthread -ldl -lnuma -pthread"
-SQC_INCS="-I${SQC_DIR}/include/ -I${SQC_DIR}/include"
+SQC_INCS="-I${SQC_DIR}/include"
 PY_PATH=$(readlink -f $(which python3.13) | sed 's@/bin/python3.13@@g')
 PYLIB="-L${PY_PATH}/lib -lpython3.13"
 
-SQC_COMPILE_OPTIONS="${SQC_INCS} -L${SQC_DIR}/lib -L${SQC_DIR}/lib64 ${SQC_LIBS} ${PYLIB}"
+SQC_COMPILE_OPTIONS="-D_GNU_SOURCE ${SQC_INCS} -L${SQC_DIR}/lib -L${SQC_DIR}/lib64 ${SQC_LIBS} ${PYLIB}"
 ```
 
 ### 3.2.2.  実行
