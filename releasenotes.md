@@ -13,6 +13,20 @@
 First release.
 
 ## Qiskit
+### 2.4.0
+- qiskit-ibm-runtime-jhpcq
+    - 0.47.0
+        - Changed
+            - Support qiskit-ibm-runtime version 0.47.0.
+
+- qiskit-sqc-runtime
+    - 1.3
+        - Added
+            - Provisional support multiple circuits execution.
+            - Add a method to get total qpu usage time.
+        - Changed
+            - Change support qiskit version from 2.0.0 to 2.4.0.
+
 ### 2.0.0
 - qiskit-ibm-runtime-jhpcq
     - 0.41.0

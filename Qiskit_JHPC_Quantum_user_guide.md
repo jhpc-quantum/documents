@@ -68,17 +68,14 @@ source ./config.sh
 source /vol0004/apps/oss/spack/share/spack/setup-env.sh
 spack load ${SPACK_PKG}
 
-# 3. Set up a Python virtual environment in each user's working directory
+# 3. Set up and activate a Python virtual environment in each user's working directory
 mkdir -p ${TARGET_NAME}
 cd ${TARGET_NAME}
 python -m venv ${VENV_NAME}
-
-# 4. Install packages such as qiskit into the virtual environment
 source ./${VENV_NAME}/bin/activate
-python -m pip install -r ${SHARE_DIR}/requirements.txt
 
-# 5. Install qiskit-ibm-runtime-jhpcq and qiskit-sqc-runtime into the virtual environment
-pip install ${SHARE_DIR}/qiskit_ibm_runtime_jhpcq-0.41.0-py3-none-any.whl
+# 4. Install qiskit-ibm-runtime-jhpcq and qiskit-sqc-runtime into the virtual environment
+pip install ${SHARE_DIR}/qiskit_ibm_runtime_jhpcq-0.47.0-py3-none-any.whl
 pip install ${SHARE_DIR}/qiskit_sqc_runtime-${BACKEND_VERSION}-py3-none-any.whl
 deactivate
 ```
