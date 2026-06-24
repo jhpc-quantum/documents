@@ -98,8 +98,8 @@ if [ "$ARCH" = "x86_64" ]; then
   #Target Name
   TARGET_NAME=x86
 elif [ "$ARCH" = "aarch64" ]; then
-  echo "This architecture is not supported."
-  exit 1
+  #Packcage Name：python, gcc, boost, numpy
+  SPACK_PKG="python@3.13.5/qhm66vh gcc@15.1.0/c3wm4pb boost@1.88.0/cx2lqoq py-numpy@2.2.6/ce7iuxj"
   #Target Name
   TARGET_NAME=a64fx
 else
