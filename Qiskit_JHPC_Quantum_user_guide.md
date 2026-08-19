@@ -1,3 +1,16 @@
+# Qiskit JHPC Quantum ユーザーガイド
+
+# 目次
+ - [1.はじめに](#1-はじめに)
+ - [2.Qiskitとは](#2qiskitとは)
+ - [3.利用方法](#3利用方法)
+   - [3.1.環境構築](#31環境構築)
+   - [3.2.実行](#32実行)
+   - [3.3.エラー抑制ライブラリFireOpalの利用](#33-エラー抑制ライブラリfireopalの利用)
+ - [4.既知の問題と対処](#4既知の問題と対処)
+   - [4.1.JHPC Quantumでプロセスが終了しない問題](#41jhpc-quantumでプロセスが終了しない問題)
+   - [4.2.FireOpalでプロセスが終了しない問題](#42-fireopalでプロセスが終了しない問題)
+
 # 1. はじめに
 本書では、量子ソフトウェア開発キットである Qiskit を用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。<br>
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
@@ -32,7 +45,7 @@ $ cd ${WORK}/Qiskit
 $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<Qiskit_x.x.x>/venv_setup.sh .
 $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<Qiskit_x.x.x>/config.sh .
 ```
-環境構築スクリプト（venv_setup.sh）を実行します。     
+環境構築スクリプト（venv_setup.sh）を実行します。
 
 ジョブスクリプト例（プリポストサーバ実行時）  
 ```
@@ -56,29 +69,6 @@ $ cp -p /vol0300/share/ra010014/jhpcq_modules/<ARCH>/SDK_latest/<Qiskit_x.x.x>/c
 ./venv_setup.sh
 ```
 
-環境構築スクリプト（venv_setup.sh）
-```
-#!/bin/bash
-
-#Setting up a virtual environment and installing packages
-# 1. Set up environment variables
-source ./config.sh
-
-# 2. Load related packages with Spack
-source /vol0004/apps/oss/spack/share/spack/setup-env.sh
-spack load ${SPACK_PKG}
-
-# 3. Set up and activate a Python virtual environment in each user's working directory
-mkdir -p ${TARGET_NAME}
-cd ${TARGET_NAME}
-python -m venv ${VENV_NAME}
-source ./${VENV_NAME}/bin/activate
-
-# 4. Install qiskit-ibm-runtime-jhpcq and qiskit-sqc-runtime into the virtual environment
-pip install ${SHARE_DIR}/qiskit_ibm_runtime_jhpcq-0.47.0-py3-none-any.whl
-pip install ${SHARE_DIR}/qiskit_sqc_runtime-${BACKEND_VERSION}-py3-none-any.whl
-deactivate
-```
 環境変数設定スクリプト(config.sh)  
 ※富岳での環境構築およびQiskitプログラムの実行の際、Spackを用いて必要なパッケージをロードします。  
 下記の環境変数設定スクリプトで使用しているSpackのパッケージのハッシュ値は2026年5月現在のものです。<br>
@@ -108,8 +98,8 @@ if [ "$ARCH" = "x86_64" ]; then
   #Target Name
   TARGET_NAME=x86
 elif [ "$ARCH" = "aarch64" ]; then
-  #Packcage Name：python, numpy
-  SPACK_PKG="python@3.13.5/qhm66vh py-numpy@2.2.6/ce7iuxj"
+  #Packcage Name：python, gcc, numpy
+  SPACK_PKG="python@3.13.5/qhm66vh gcc@15.1.0/c3wm4pb py-numpy@2.2.6/ce7iuxj"
   #Target Name
   TARGET_NAME=a64fx
 else
@@ -180,8 +170,8 @@ export SQC_LIBRARY_PATH=${SQC_DIR}/lib64
 ```
 ### 3.2.2.　実行
 JHPC Quantumシステム上で量子回路を実行するサンプルプログラムを実行する方法について説明します。<br>
-※ SQCBackendの引数は下記の表を参照し、接続先に対応する引数を指定してください。
-| 接続先 | SQCBackendの引数 | 
+※ service.backendの引数nameは下記の表を参照し、接続先に対応する引数を指定してください。
+| 接続先 | service.backendの引数name | 
 |--------|--------|
 | reimei  | qtm_grpc  |
 | reimei-simulator | qtm_sim_grpc  |
@@ -262,16 +252,25 @@ python ./sample.py
 ```
 
 ### 3.2.3.　実行結果  
-プリポスト環境と富岳計算ノード（Arm）におけるサンプルプログラムの実行結果です。
-
-JHPC Quantumシステム上でで量子回路を実行するサンプルプログラム（sample.py）の実行結果の例
+プリポスト環境と富岳計算ノード（Arm）におけるサンプルプログラムの実行結果です。<br>
 ```
 {'11': 6, '00': 4}
 JobStatus.DONE
 ```
 
+
+## 3.3 エラー抑制ライブラリFireOpalの利用
+### 3.3.1 FireOpalのインストール
+FireOpalモジュールをインストールする場合は、環境構築スクリプト実行時に下記のようにオプションを指定してください。
+```
+$ ./venv_setup.sh --enable FireOpal
+```
+### 3.3.2 実行
+FireOpalのサンプルプログラムは下記リンクをご参照ください。<br>
+https://portal.qc.r-ccs.riken.jp/redmine/projects/jhpc-quantum-help-desk/wiki/Announcements
+
 # 4.　既知の問題と対処
-## 4.1.　プロセスが終了しない問題
+## 4.1.　JHPC Quantumでプロセスが終了しない問題
 Qiskitを利用してJHPC Quantumの量子コンピュータで実行すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
 <br>
 暫定対処法として、以下の方法があります。<br>
@@ -286,3 +285,35 @@ Qiskitを利用してJHPC Quantumの量子コンピュータで実行すると�
       ```
       $ export OMP_NUM_THREADS=1
       ```
+
+## 4.2. FireOpalでプロセスが終了しない問題
+Qiskitを用いてJHPC Quantum上でFire Opal を利用すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
+暫定対処法として、以下の方法があります。
+* 結果が返却され次第ジョブの制限時間やCtrl+Cなどでプロセスを強制的に終了させる
+* 下記2つを両方とも実施
+  * 以下の環境変数の設定のうちどちらか片方を行う。
+    * ```
+      $ export OPENBLAS_NUM_THREADS=1
+      ```
+    * ```
+      $ export OMP_NUM_THREADS=1
+      ```
+  * 原因であるFireOpalSamplerの初期化の時のみシグナルをブロックする設定を付与
+    ```diff
+    +from contextlib import contextmanager
+    +import signal
+    +@contextmanager
+    +def block_signals():
+    +    sigs = {signal.SIGUSR2}
+    +    signal.pthread_sigmask(signal.SIG_BLOCK, sigs)
+    +    try:
+    +        yield
+    +    finally:
+    +        signal.pthread_sigmask(signal.SIG_UNBLOCK, sigs)
+    
+    :(省略)
+    -sampler = FireOpalSampler(mode=service.backend("ibm_sqc"))
+    +with block_signals():
+    +    sampler = FireOpalSampler(mode=service.backend("ibm_sqc"))
+    :(省略)
+    ```
