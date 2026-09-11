@@ -241,7 +241,7 @@ JHPC Quantumシステム上で量子回路を実行するサンプルプログ�
 source ./backend_setup.sh reimei-simulator
 
 # 2. Compile program
-gcc sample_api.c -o sample.out ${SQC_COMPILE_OPTIONS} 
+gcc sample_api_sync.c -o sample.out ${SQC_COMPILE_OPTIONS} 
 ```
 
 <br>
@@ -285,9 +285,15 @@ source /path/to/${VENV_NAME}/bin/activate
 ./sample.out
 ```
 
-### 3.2.3. サンプルプログラムとその実行結果
-#### 3.2.3.1. C-APIで作成した回路の実行
-C-APIで作成した回路を実行するサンプルプログラム（sample_api.c）
+### 3.2.3. サンプルプログラム
+サンプルプログラムは下記3つあります。
+* 同期実行
+   * C-APIで作成した回路の実行(sample_api_sync.c)
+   * OpenQASMファイルの実行(sample_qasm_sync.c)
+* 非同期実行
+   * C-APIで作成した回路の実行(sample_api_async.c)
+
+#### 3.2.3.1. 同期実行：C-APIで作成した回路の実行（sample_api_sync.c）
 ```
 #include "sqc_api.h"
 #include "sqc_ecode.h"
@@ -343,7 +349,7 @@ int main(int argc, char *argv[])
   // Write result to file
   if ( error_code == SQC_RESULT_OK ) {
     FILE *file;
-    file = fopen("result.txt", "w");
+    file = fopen("result_api_sync.txt", "w");
     if (file == NULL) {
       printf("Error opening file.\n");
     } else {
@@ -363,101 +369,8 @@ int main(int argc, char *argv[])
   return 0;
 }
 ```
-上記サンプルプログラムの実行結果ファイル（result.txt）の例<br>
-reimeiまたはreimei-simulatorの場合
-```
-{
-   c    : "00"
-}
-{
-   c    : "00"
-}
-{
-   c    : "11"
-}
-{
-   c    : "11"
-}
-{
-   c    : "11"
-}
-{
-   c    : "11"
-}
-{
-   c    : "00"
-}
-{
-   c    : "00"
-}
-{
-   c    : "00"
-}
-{
-   c    : "11"
-}
-```
-ibm-kobe-daccの場合
-```
-{
- "metadata": {
-  "execution": {
-   "execution_spans": [
-    [
-     {
-      "date": "2025-10-27T06:15:03.863615"
-     },
-     {
-      "date": "2025-10-27T06:15:04.781847"
-     },
-     {
-      "0": [
-       [
-        10
-       ],
-       [
-        0,
-        1
-       ],
-       [
-        0,
-        10
-       ]
-      ]
-     }
-    ]
-   ]
-  },
-  "version": 2
- },
- "results": [
-  {
-   "data": {
-    "c": {
-     "num_bits": 2,
-     "samples": [
-      "0x3",
-      "0x3",
-      "0x0",
-      "0x3",
-      "0x3",
-      "0x0",
-      "0x3",
-      "0x3",
-      "0x3",
-      "0x3"
-     ]
-    }
-   },
-   "metadata": {
-    "circuit_metadata": {}
-   }
-  }
- ]
-}
-```
-#### 3.2.3.2. OpenQASMファイルの実行
-OpenQASMファイルを実行するサンプルプログラム（sample_qasm.c）
+
+#### 3.2.3.2. 同期実行：OpenQASMファイルの実行（sample_qasm_sync.c）
 ```
 #include "sqc_api.h"
 #include "sqc_ecode.h"
@@ -557,7 +470,96 @@ cx q[0], q[1];
 c[0] = measure q[0];
 c[1] = measure q[1];
 ```
-上記サンプルプログラムの実行結果ファイル（result_qasm.txt）の例<br>
+
+#### 3.2.3.3. 非同期実行：C-APIで作成した回路の実行（sample_api_async.c）
+```
+// Copyright (C) 2026 RIKEN, Japan.
+
+// Sample program using SQC C-API and a asynchronous execution function.
+
+#include "sqc_api.h"
+#include "sqc_ecode.h"
+#include <stdlib.h>
+#include <string.h>
+
+int main(int argc, char *argv[])
+{
+  // Specify backend
+  sqcBackend backend = SQC_RPC_SCHED_QC_TYPE_QTM_SIM_GRPC;
+
+  // Initialize C-API
+  sqcInitOptions* init_options = sqcMallocInitOptions();
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC){
+    init_options->use_qiskit = 1;
+  } else {
+    init_options->use_qiskit = 0;
+  }
+  sqcInitialize(init_options);
+
+  // Construct circuit
+  const int qubits = 2;
+  sqcQC* qcir = sqcQuantumCircuit(qubits);
+  sqcHGate(qcir, 0);
+  sqcCXGate(qcir, 0, 1);
+  sqcMeasure(qcir, 0, 0, NULL);
+  sqcMeasure(qcir, 1, 1, NULL);
+
+  // Set run option
+  sqcRunOptions* run_options = (sqcRunOptions*)malloc(sizeof(sqcRunOptions));
+  sqcInitializeRunOpt(run_options);
+  run_options->nshots = 10;
+  run_options->qubits = qubits;
+  run_options->outFormat = SQC_OUT_RAW;
+
+  if (backend == SQC_RPC_SCHED_QC_TYPE_IBM_DACC) {
+    // Convert quantum circuit to OpenQASM string
+    qcir->qasm = (char*)malloc(500);
+    sqcConvQASMtoMemory(qcir, backend, qcir->qasm, 500);
+    
+    // Transpile quantum circuit
+    sqcTranspile(qcir, backend, NULL);
+    printf("QASM after transpile: %s\n", qcir->qasm);
+  }
+
+  // Run quantum circuit
+  sqc_handle_t* sqc_handle = (sqc_handle_t*)malloc(sizeof(sqc_handle_t));
+  int run_error_code = sqcQCRunAsync(qcir, backend, *run_options, sqc_handle);
+  printf("sqcQCRunAsync error_code:%d\n", run_error_code);
+  printf("Job ID:%s\n", sqc_handle->job_id);
+
+  // Wait job
+  sqcOut* result_out = (sqcOut *)malloc(sizeof(sqcOut));
+  int wait_error_code = sqcQCWait(result_out, *sqc_handle);
+  printf("sqcQCWait error_code:%d\n", wait_error_code);
+
+  // Write result to file
+  if ( wait_error_code == SQC_RESULT_OK ) {
+    FILE *file;
+    file = fopen("result_api_async.txt", "w");
+    if (file == NULL) {
+      printf("Error opening file.\n");
+    } else {
+      sqcPrintQCResult(file, result_out, run_options->outFormat);
+      fclose(file);
+    }
+  }
+
+  // End processing of C-API
+  sqcFreeOut(result_out, run_options->outFormat);
+  free(result_out);
+  free(sqc_handle);
+  free(run_options);
+  sqcDestroyQuantumCircuit(qcir);
+  sqcFinalize(init_options);
+  sqcFreeInitOptions(init_options);
+
+  return 0;
+}
+```
+
+### 3.2.4.　サンプルプログラムの実行結果
+下記にサンプルプログラムの実行結果ファイルの例を記載します。<br>
+全てのサンプルプログラムで、実行結果ファイルの内容は同様です。<br>
 reimeiまたはreimei-simulatorの場合
 ```
 {

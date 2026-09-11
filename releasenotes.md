@@ -20,6 +20,9 @@ First release.
             - Support qiskit-ibm-runtime version 0.47.0.
 
 - qiskit-sqc-runtime
+    - 1.4
+        - Added
+            - Support asynchronously execution.
     - 1.3
         - Added
             - Provisional support multiple circuits execution.

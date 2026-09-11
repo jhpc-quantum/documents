@@ -177,6 +177,12 @@ JHPC Quantumシステム上で量子回路を実行するサンプルプログ�
 | reimei-simulator | qtm_sim_grpc  |
 | ibm-kobe-dacc  | ibm_sqc  |
 
+※ sampler.runの引数modeは下記の表を参照し、同期実行か非同期実行かを選択してください。<br>
+| 実行形態 | sampler.runの引数mode | 
+|--------|--------|
+| 同期実行 | sync(デフォルト) |
+| 非同期実行 | async |
+
 JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）
 ```
 from qiskit.circuit import QuantumCircuit
@@ -199,7 +205,7 @@ isa_circuit = pm.run(qc)
 
 # Run quantum circuit
 sampler = SamplerV2(mode=backend)
-job = sampler.run([isa_circuit], shots=10)
+job = sampler.run([isa_circuit], shots=10, mode="sync")
 
 # Show result 
 result = job.result()
@@ -253,19 +259,25 @@ python ./sample.py
 
 ### 3.2.3.　実行結果  
 プリポスト環境と富岳計算ノード（Arm）におけるサンプルプログラムの実行結果です。<br>
+同期実行の場合
 ```
 {'11': 6, '00': 4}
 JobStatus.DONE
 ```
+非同期実行の場合
+```
+{'11': 6, '00': 4}
+[['9c1406bb-c03a-4c20-8ea4-7fe62480bdb8', <JobStatus.DONE: 'job has successfully run'>]]
+```
+※非同期実行の場合、job.status()で返却されるのは実行した回路の数と同じ数の[ジョブID, ジョブステータス]のリストになります。
 
-
-## 3.3 エラー抑制ライブラリFireOpalの利用
-### 3.3.1 FireOpalのインストール
+## 3.3. エラー抑制ライブラリFireOpalの利用
+### 3.3.1. FireOpalのインストール
 FireOpalモジュールをインストールする場合は、環境構築スクリプト実行時に下記のようにオプションを指定してください。
 ```
 $ ./venv_setup.sh --enable FireOpal
 ```
-### 3.3.2 実行
+### 3.3.2. 実行
 FireOpalのサンプルプログラムは下記リンクをご参照ください。<br>
 https://portal.qc.r-ccs.riken.jp/redmine/projects/jhpc-quantum-help-desk/wiki/Announcements
 
