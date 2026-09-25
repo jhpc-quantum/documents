@@ -34,7 +34,7 @@ First release.
 - qiskit-ibm-runtime-jhpcq
     - 0.41.0
         - Added
-            - QiskitRuntimeService, SamplerV2 support JHPC Quantum. 
+            - QiskitRuntimeService, SamplerV2 support JHPC-quantum platform. 
 
 - qiskit-sqc-runtime
     - 1.2
@@ -65,7 +65,7 @@ First release.
     - 1.0<br>
         First release.
 
-## CUDA-Q supported JHPC Quantum system.
+## CUDA-Q supported JHPC-quantum platform.
 ### 0.11.0
 - 2025/11/14
     - Added

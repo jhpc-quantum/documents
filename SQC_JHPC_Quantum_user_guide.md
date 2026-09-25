@@ -1,5 +1,7 @@
+# JHPC-quantum量子・スパコン連携プラットフォーム SQCユーザーガイド
+
 # 1. はじめに
-本書では、SQCを用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。<br>
+本書では、SQCを用いて「富岳」からJHPC-quantum連携プラットフォーム上で量子アプリケーションを実行するための方法について説明します。<br>
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
 [jhpc-quantum・GitHub](https://github.com/jhpc-quantum)<br>
 アップデートの情報は[リリースノート](https://github.com/jhpc-quantum/documents/blob/main/releasenotes.md)を参照ください
@@ -202,7 +204,7 @@ SQC_COMPILE_OPTIONS="-D_GNU_SOURCE ${SQC_INCS} -L${SQC_DIR}/lib -L${SQC_DIR}/lib
 
 ### 3.2.2.  実行
 
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラムを実行する方法について説明します。
+JHPC-quantum連携プラットフォーム上で量子回路を実行するサンプルプログラムを実行する方法について説明します。
 
 サンプルプログラムを翻訳するスクリプト（test_comp.sh）を実行します。
 

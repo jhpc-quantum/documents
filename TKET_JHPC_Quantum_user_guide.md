@@ -1,5 +1,7 @@
+# JHPC-quantum量子・スパコン連携プラットフォーム TKETユーザーガイド
+
 # 1. はじめに
-本書では、量子ソフトウェア開発キットである TKET を用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。  
+本書では、量子ソフトウェア開発キットである TKET を用いて「富岳」からJHPC-quantum連携プラットフォーム上で量子アプリケーションを実行するための方法について説明します。  
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
 [jhpc-quantum・GitHub](https://github.com/jhpc-quantum)<br>
 アップデートの情報は[リリースノート](https://github.com/jhpc-quantum/documents/blob/main/releasenotes.md)を参照ください
@@ -21,7 +23,7 @@ $ cd ${WORK}/TKET
 ```
 ### 3.1.2.　Python仮想環境の構築とパッケージのインストール
 環境構築スクリプト(venv_setup.sh)を用いて、Python仮想環境の構築とパッケージのインストール行います。   
-インストールするパッケージは、TKET(pytket)と関連パッケージ、およびJHPC Quantumシステム用のpytket拡張パッケージ(pytket-sqc)です。   
+インストールするパッケージは、TKET(pytket)と関連パッケージ、およびJHPC-quantum連携プラットフォーム用のpytket拡張パッケージ(pytket-sqc)です。   
 インストール時間は数分です。
 
 共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***TKET_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をTKETディレクトリにコピーします。  
@@ -183,9 +185,9 @@ export PATH=${SQC_DIR}/bin:$PATH
 export SQC_LIBRARY_PATH=${SQC_DIR}/lib64
 ```
 ### 3.2.2.　実行
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）を実行する方法について説明します。  
+JHPC-quantum連携プラットフォーム上で量子回路を実行するサンプルプログラム（sample.py）を実行する方法について説明します。  
 
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）  
+JHPC-quantum連携プラットフォーム上で量子回路を実行するサンプルプログラム（sample.py）  
 
 ```
 from pytket import Circuit
@@ -261,7 +263,7 @@ python ./sample.py
 ### 3.2.3.　実行結果  
 プリポスト環境と富岳計算ノード（Arm）における”sample.py”の実行結果です。
 
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）の実行結果の例
+JHPC-quantum連携プラットフォーム上で量子回路を実行するサンプルプログラム（sample.py）の実行結果の例
 ```
 Bitlist: [c[0], c[1]]
 Counter({(1, 1): 6, (0, 0): 4})

@@ -1,4 +1,4 @@
-# Qiskit JHPC Quantum ユーザーガイド
+# JHPC-quantum量子・スパコン連携プラットフォーム Qiskitユーザーガイド
 
 # 目次
  - [1.はじめに](#1-はじめに)
@@ -8,11 +8,11 @@
    - [3.2.実行](#32実行)
    - [3.3.エラー抑制ライブラリFireOpalの利用](#33-エラー抑制ライブラリfireopalの利用)
  - [4.既知の問題と対処](#4既知の問題と対処)
-   - [4.1.JHPC Quantumでプロセスが終了しない問題](#41jhpc-quantumでプロセスが終了しない問題)
+   - [4.1.JHPC-quantum連携プラットフォームでプロセスが終了しない問題](#41jhpc-quantum連携プラットフォームでプロセスが終了しない問題)
    - [4.2.FireOpalでプロセスが終了しない問題](#42-fireopalでプロセスが終了しない問題)
 
 # 1. はじめに
-本書では、量子ソフトウェア開発キットである Qiskit を用いて「富岳」から量子・スパコン連携プラットフォーム（JHPC Quantum）上で量子アプリケーションを実行するための方法について説明します。<br>
+本書では、量子ソフトウェア開発キットである Qiskit を用いて「富岳」からJHPC-quantum連携プラットフォーム上で量子アプリケーションを実行するための方法について説明します。<br>
 この手順書をブラウザで閲覧したい方は以下から参照してください。<br>
 [jhpc-quantum・GitHub](https://github.com/jhpc-quantum)<br>
 アップデートの情報は[リリースノート](https://github.com/jhpc-quantum/documents/blob/main/releasenotes.md)を参照ください
@@ -35,7 +35,7 @@ $ cd ${WORK}/Qiskit
 ```
 ### 3.1.2.　Python仮想環境の構築とパッケージのインストール
 環境構築スクリプト(venv_setup.sh)を用いて、Python仮想環境の構築とパッケージのインストール行います。   
-インストールするパッケージは、qiskitと関連パッケージ、およびJHPC Quantumシステム用のqiskit拡張パッケージ(qiskit-sqc-runtime)です。   
+インストールするパッケージは、qiskitと関連パッケージ、およびJHPC-quantum連携プラットフォーム用のqiskit拡張パッケージ(qiskit-sqc-runtime)です。   
 インストール時間は数分です。
 
 共有ディレクトリ（/vol0300/share/ra010014/jhpcq_modules/<***ARCH***>/SDK_latest/<***Qiskit_x.x.x***>）から環境構築スクリプト(venv_setup.sh)と環境変数設定スクリプト(config.sh)をQiskitディレクトリにコピーします。  
@@ -169,7 +169,7 @@ export PATH=${SQC_DIR}/bin:$PATH
 export SQC_LIBRARY_PATH=${SQC_DIR}/lib64
 ```
 ### 3.2.2.　実行
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラムを実行する方法について説明します。<br>
+JHPC-quantum連携プラットフォーム上で量子回路を実行するサンプルプログラムを実行する方法について説明します。<br>
 ※ service.backendの引数nameは下記の表を参照し、接続先に対応する引数を指定してください。
 | 接続先 | service.backendの引数name | 
 |--------|--------|
@@ -183,7 +183,7 @@ JHPC Quantumシステム上で量子回路を実行するサンプルプログ�
 | 同期実行 | sync(デフォルト) |
 | 非同期実行 | async |
 
-JHPC Quantumシステム上で量子回路を実行するサンプルプログラム（sample.py）
+JHPC-quantum連携プラットフォーム上で量子回路を実行するサンプルプログラム（sample.py）
 ```
 from qiskit.circuit import QuantumCircuit
 from qiskit_ibm_runtime import QiskitRuntimeService, SamplerV2
@@ -282,8 +282,8 @@ FireOpalのサンプルプログラムは下記リンクをご参照ください
 https://portal.qc.r-ccs.riken.jp/redmine/projects/jhpc-quantum-help-desk/wiki/Announcements
 
 # 4.　既知の問題と対処
-## 4.1.　JHPC Quantumでプロセスが終了しない問題
-Qiskitを利用してJHPC Quantumの量子コンピュータで実行すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
+## 4.1.　JHPC-quantum連携プラットフォームでプロセスが終了しない問題
+Qiskitを利用してJHPC-quantum連携プラットフォームの量子コンピュータで実行すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
 <br>
 暫定対処法として、以下の方法があります。<br>
 - 結果が返却され次第ジョブの制限時間やCtrl+Cなどでプロセスを強制的に終了させる。
@@ -299,7 +299,7 @@ Qiskitを利用してJHPC Quantumの量子コンピュータで実行すると�
       ```
 
 ## 4.2. FireOpalでプロセスが終了しない問題
-Qiskitを用いてJHPC Quantum上でFire Opal を利用すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
+Qiskitを用いてJHPC-quantum連携プラットフォーム上でFire Opal を利用すると、結果が返却されますがプロセスが終了しない問題が発生します。<br>
 暫定対処法として、以下の方法があります。
 * 結果が返却され次第ジョブの制限時間やCtrl+Cなどでプロセスを強制的に終了させる
 * 下記2つを両方とも実施
