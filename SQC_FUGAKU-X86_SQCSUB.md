@@ -3,6 +3,12 @@
 Installation prefix: `/vol0003/share/ra010014/jhpcq/x86_3`
 
 ## Set up a Bash session
+```bash
+. /vol0004/apps/oss/spack/share/spack/setup-env.sh
+
+spack load gcc@16.2.0/rdlj3rj
+spack load boost@1.88.0/xoe4a3r
+```
 
 ```bash
 source /vol0003/share/ra010014/jhpcq/x86_3/scripts/env.sh reimei your-group-id
