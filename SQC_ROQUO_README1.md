@@ -1,5 +1,13 @@
 # SQC command-line tools
 
+## Install Cert and JWT files
+
+```bash
+ . /shared/hps1/jhpcq/sqc/latest/scripts/install-cert-files.sh BACKEND
+ python3 /shared/hps1/jhpcq/sqc/latest/scripts/fetch_qtm_jwt.py
+ mv ~/.qtm.jwt ~/.sqc-scheduler/jwt.token
+```
+
 ## Set environment variables first
 
 Source the installed environment script in Bash,
