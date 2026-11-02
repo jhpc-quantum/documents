@@ -4,8 +4,11 @@
 
 ```bash
  . /shared/hps1/jhpcq/sqc/latest/scripts/install-cert-files.sh BACKEND
- python3 /shared/hps1/jhpcq/sqc/latest/scripts/fetch_qtm_jwt.py
- mv ~/.qtm.jwt ~/.sqc-scheduler/jwt.token
+ . /shared/hps1/jhpcq/sqc/latest/env.sh BACKEND GROUP_ID
+jhpcq-sqc-init
+jhpcq-token login
+
+Note: GROUP_ID is same as ROQUO's group
 ```
 
 ## Set environment variables first
