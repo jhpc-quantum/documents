@@ -1,37 +1,38 @@
 # SQC command-line tools
 
-## Install Cert and JWT files
+## Set Prefix
 
 ```bash
- . /shared/hps1/jhpcq/sqc/latest/scripts/install-cert-files.sh BACKEND
- . /shared/hps1/jhpcq/sqc/latest/env.sh BACKEND GROUP_ID
-jhpcq-sqc-init
-jhpcq-token login
-
-Note: GROUP_ID is same as ROQUO's group
+login/PP nodes on Fugaku
+export PREFIX=/vol0003/share/ra010014/jhpcq/x86
+compute nodes on Fugaku
+export PREFIX=/vol0003/share/ra010014/jhpcq/a64fx
+compute node on ROQUO
+export PREFIX=/shared/hps1/jhpcq/sqc/latest/
 ```
 
-## Set environment variables first
+## Install Cert and JWT files and Set environment variables
+
+```bash
+source $PREFIX/scripts/install-cert-files.sh BACKEND
+source $PREFIX/scripts/env.sh BACKEND GROUP_ID
+jhpcq-sqc-init
+jhpcq-token login
+```
+
+Note: GROUP_ID is same as ROQUO's group
 
 Source the installed environment script in Bash,
 selecting the backend and your scheduler group:
 
 ```bash
-source /shared/hps1/jhpcq/sqc/latest/env.sh reimei-simulator YOUR_GROUP
+source $PREFIX/scripts/env.sh reimei-simulator YOUR_GROUP
 ```
 
 For IBM, use:
 
 ```bash
-source /shared/hps1/jhpcq/sqc/latest/env.sh ibm-kobe-dacc YOUR_GROUP
-```
-
-The general syntax is:
-
-```bash
-source /shared/hps1/jhpcq/sqc/latest/env.sh BACKEND GROUP_ID
-# Equivalent Bash syntax:
-. /shared/hps1/jhpcq/sqc/latest/env.sh BACKEND GROUP_ID
+source $PREFIX/scripts/env.sh ibm-kobe-dacc YOUR_GROUP
 ```
 
 Replace `YOUR_GROUP` or `GROUP_ID` with your assigned scheduler group, for
@@ -39,7 +40,7 @@ example `group1`. For Reimei hardware, use `reimei` as the backend. Source the
 script in the same shell where you will run the commands so its
 exported variables apply to them. Repeat this setup in each new shell, and
 source it again with the appropriate backend when switching systems. Executing
-it as `bash /shared/hps1/jhpcq/sqc/latest/env.sh ...` does not set variables in your current shell.
+it as `bash $PREFIX/scripts/env.sh ...` does not set variables in your current shell.
 
 The script sets the installed libraries, Python runtime, scheduler endpoints,
 and logging configuration. The installation prefix is `/shared/hps1/jhpcq/sqc/latest`.
