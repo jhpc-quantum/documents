@@ -6,30 +6,9 @@ is `sqc_api.h`; link with `libsqc_api.so`. This installation provides the API
 headers in `include/` and runtime libraries in `lib/`.
 
 ## Set up your shell
+See here:
+https://github.com/jhpc-quantum/documents/blob/main/SQC_SQCSUB.md
 
-Use Bash on the ARM64 system where this installation is available:
-
-```bash
-source /shared/hps1/jhpcq/sqc/latest/env.sh reimei-simulator YOUR_GROUP
-```
-
-`PREFIX` is `/shared/hps1/jhpcq/sqc/latest`. Replace `YOUR_GROUP` with your assigned
-group. The script adds the installed commands and libraries to the shell paths
-and configures Python, `SQC_RPC_SERVER`, and `SQC_RPC_GROUP_ID`.
-
-Choose a matching environment and backend constant in your program:
-
-| Environment argument | C API backend constant |
-| --- | --- |
-| `reimei-simulator` | `SQC_RPC_SCHED_QC_TYPE_QTM_SIM_GRPC` |
-| `reimei` | `SQC_RPC_SCHED_QC_TYPE_QTM_GRPC` |
-| `ibm-kobe-dacc` | `SQC_RPC_SCHED_QC_TYPE_IBM_DACC` |
-
-Selecting an environment does not change a backend constant compiled into your
-program. Scheduler submission requires your configured credentials and client
-configuration in `~/.sqc-scheduler`; sourcing `env.sh` does not obtain credentials.
-The example uses JWT authentication. Offline circuit generation needs no
-scheduler connection.
 
 ## Complete example: construct a Bell circuit
 
@@ -131,10 +110,8 @@ cleanup:
 Compile C with GCC and link with G++ because the API implementation uses C++:
 
 ```bash
-gcc -std=gnu99 -D_GNU_SOURCE -Wall -Wextra \
-  -I"$PREFIX/include" -c bell.c -o bell.o
-g++ bell.o -L"$PREFIX/lib" -Wl,-rpath,"$PREFIX/lib" \
-  -lsqc_api -lsqc_rpccommon -o bell
+gcc $SQC_INC -c bell.c -o bell.o
+g++ bell.o $SQC_LIB -o bell
 
 # Offline: generate and inspect the circuit.
 ./bell
